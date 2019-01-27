@@ -39,13 +39,20 @@ class RatingTargetIndependentMethod(RateMethod):
 
         self.info = None
         self.serial = None
+        self.tag_serial = None
 
         self.max_blanks = dict()
 
-        self.avg_base = 75
-        self.avg_base_div = 0.02
+        self.avg_base = 70
+        self.avg_base_div = 0.025
         self.default_avg = 50
         self.default_target_sum = 0
+
+        # normal
+        # self.decay_base = 1
+        # self.decay = 0
+        self.decay_base = 0.85  # 可调
+        self.decay = 0.07  # 可调
 
         pcid, cid = Entrance().params
         self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "TARGET_{name}.jpg"
@@ -54,6 +61,7 @@ class RatingTargetIndependentMethod(RateMethod):
         df = load("info")
         self.info = load_pkl("targetBasicAspectInfo")
         self.serial = load_pkl("targetNumInfo")
+        self.tag_serial = load_pkl("tagBasicAspectInfo")
         df = df.groupby(["tag", "target"]).apply(self.rate_func)
         dump(df, "info")
 
@@ -61,7 +69,11 @@ class RatingTargetIndependentMethod(RateMethod):
         df, x, msg = self.rate_func_process(df)
         if Mode.showFlag:
             _x, _y = list(), list()
-            for i in range(0, 100):
+            ss = len([t for t in x if t == 100])
+            if ss:
+                print(df["tag"].values[0], df["target"].values[0])
+                print("100 num", ss)
+            for i in range(0, 101):
                 cnt = len([t for t in x if i <= t < i + 1])
                 if cnt != 0:
                     _x.append(i)
@@ -77,7 +89,10 @@ class RatingTargetIndependentMethod(RateMethod):
         try:
             avg = self.avg_base - serial_no / (side * self.avg_base_div)
         except ZeroDivisionError:
-            avg = self.avg_base
+            if not side:
+                avg = 50
+            else:
+                avg = self.avg_base
 
         base, mul, special = 5, 10, 15
         diff = len(df)
@@ -96,6 +111,9 @@ class RatingTargetIndependentMethod(RateMethod):
             except KeyError:
                 max_blank = 100 - (
                             scipy.stats.norm.ppf(block * (size - size / (1 + side)), self.mu, self.sigma) + base) * mul
+                # max_blank = max_blank
+                # max_blank = max_blank * self.decay_base
+                max_blank = max_blank * (self.decay_base - (self.tag_serial[tag]["serial"]) * self.decay)
                 self.max_blanks[tag] = max_blank
             rectify = (0.04 * avg - 2) * max_blank
 
@@ -123,8 +141,13 @@ class RatingTargetIndependentMethod(RateMethod):
             try:
                 max_blank = self.max_blanks[tag]
             except KeyError:
+                if not side:
+                    side = 1
                 max_blank = 100 - (
                             scipy.stats.norm.ppf(block * (size - size / (1 + side)), self.mu, self.sigma) + base) * mul
+                # max_blank = max_blank
+                # max_blank = max_blank * self.decay_base
+                max_blank = max_blank * (self.decay_base - (self.tag_serial[tag]["serial"]) * self.decay)
                 self.max_blanks[tag] = max_blank
             rectify = (0.04 * avg - 2) * max_blank
 

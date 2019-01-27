@@ -38,12 +38,14 @@ class Mode(object):
 
 
 class Parameters(object):
-    tagList = ['质量', '款式', '功能', '服务']
+    tagList = ["质量", "款式", "功能", "服务"]
 
+    """可调"""
     zTarget = 10
     zTag = 10
     zModel = 10
 
+    """可调"""
     zTargetAspect = 10
     zTagAspect = 10
     zModelAspect = 10
