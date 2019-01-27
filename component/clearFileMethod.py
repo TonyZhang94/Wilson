@@ -44,6 +44,16 @@ class RemainFinalResultMethod(ClearFileMethod):
                     os.remove(path + file)
             os.removedirs(path)
 
+        path = FileBase.showPath.format(pcid=pcid, cid=cid)
+        try:
+            result_files = os.listdir(path)
+        except FileNotFoundError:
+            pass
+        else:
+            for file in result_files:
+                os.remove(path + file)
+            os.removedirs(path)
+
 
 class ClearAllMethod(ClearFileMethod):
     """Clear All Temporary Directories And Files"""
@@ -60,6 +70,16 @@ class ClearAllMethod(ClearFileMethod):
             os.removedirs(FileBase.infoPath)
 
         path = FileBase.temporaryPath.format(pcid=pcid, cid=cid)
+        try:
+            result_files = os.listdir(path)
+        except FileNotFoundError:
+            pass
+        else:
+            for file in result_files:
+                os.remove(path + file)
+            os.removedirs(path)
+
+        path = FileBase.showPath.format(pcid=pcid, cid=cid)
         try:
             result_files = os.listdir(path)
         except FileNotFoundError:

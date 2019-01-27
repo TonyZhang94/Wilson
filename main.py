@@ -2,6 +2,7 @@
 
 from Wilson.tools.public import Entrance
 from Wilson.strategy.noRelationStrategy import NoRelationStrategy
+from Wilson.strategy.noRelationWithWilsonAspectStrategy import NoRelationWithWilsonAspectStrategy
 
 
 class Manager(object):
@@ -10,6 +11,7 @@ class Manager(object):
 
     def run(self):
         strategy = NoRelationStrategy()
+        # strategy = NoRelationWithWilsonAspectStrategy()
         strategy().execute()
 
 
@@ -29,6 +31,8 @@ if __name__ == '__main__':
 
     pcid = "100"
     cid = "2018101516"
+    # pcid = "4"
+    # cid = "50012097"
 
     obj = Manager(pcid=pcid, cid=cid)
     obj.run()

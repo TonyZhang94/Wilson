@@ -8,6 +8,11 @@ from Wilson.component.adjustWeightMethod import *
 from Wilson.component.calBaseLineMethod import *
 from Wilson.component.evaluateMethod import *
 from Wilson.component.rankMethod import *
+from Wilson.component.calAspectMethod import *
+from Wilson.component.rateMethod import *
+from Wilson.component.calAverAndTopMethod import *
+from Wilson.component.selectMethod import *
+from Wilson.component.transToJsonMethod import *
 from Wilson.component.clearFileMethod import *
 
 
@@ -95,6 +100,66 @@ class RankCommand(TasksObj):
     @logging
     def execute(self):
         self.obj.rank()
+
+
+class CalAspectCommand(TasksObj):
+    obj = Descriptor(CalAspectMethod)
+
+    def __init__(self, method, z=None):
+        self.obj = method()
+        if z is not None:
+            self.obj.z = z
+
+        if hasattr(self.obj, "z"):
+            self.doc = self.obj.__doc__ + " // z " + str(self.obj.z)
+
+    @logging
+    def execute(self):
+        self.obj.cal()
+
+
+class RateCommand(TasksObj):
+    obj = Descriptor(RateMethod)
+
+    def __init__(self, method):
+        self.obj = method()
+
+    @logging
+    def execute(self):
+        self.obj.rate()
+
+
+class CalAverAndTopCommand(TasksObj):
+    obj = Descriptor(CalAverAndTopMethod)
+
+    def __init__(self, method):
+        self.obj = method()
+
+    @logging
+    def execute(self):
+        self.obj.cal()
+
+
+class SelectCommand(TasksObj):
+    obj = Descriptor(SelectMethod)
+
+    def __init__(self, method):
+        self.obj = method()
+
+    @logging
+    def execute(self):
+        self.obj.select()
+
+
+class TransToJsonCommand(TasksObj):
+    obj = Descriptor(TransToJsonMethod)
+
+    def __init__(self, method):
+        self.obj = method()
+
+    @logging
+    def execute(self):
+        self.obj.trans()
 
 
 class ClearFileCommand(TasksObj):

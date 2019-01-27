@@ -25,10 +25,12 @@ DBDefault = DB99
 class Mode(object):
     """For Test"""
     srcLOCAL = True
+    showFlag = True
     clearLOCAL = False
 
     """For Use"""
     # srcLOCAL = True
+    # showFlag = False
     # clearLOCAL = True
 
     def __new__(cls, *args, **kwargs):
@@ -42,6 +44,10 @@ class Parameters(object):
     zTag = 10
     zModel = 10
 
+    zTargetAspect = 10
+    zTagAspect = 10
+    zModelAspect = 10
+
     def __new__(cls, *args, **kwargs):
         raise InstantiationError
 
@@ -51,7 +57,11 @@ class FileBase(object):
     infoPath = "data/"
 
     temporary = "temporary/pcid{pcid}cid{cid}/{name}.csv"
+    temporaryPKL = "temporary/pcid{pcid}cid{cid}/{name}.pkl"
     temporaryPath = "temporary/pcid{pcid}cid{cid}/"
+
+    show = "show//pcid{pcid}cid{cid}/{name}.jpg"
+    showPath = "show//pcid{pcid}cid{cid}/"
 
     result = "result/pcid{pcid}cid{cid}/{name}.csv"
     resultPath = "result/pcid{pcid}cid{cid}/"

@@ -4,7 +4,7 @@ from Wilson.tasks import Tasks
 from Wilson.component.tasksObj import *
 
 
-class NoRelationStrategy(object):
+class NoRelationWithWilsonAspectStrategy(object):
     def __init__(self):
         self.__tasks = self.assign_tasks()
 
@@ -24,9 +24,9 @@ class NoRelationStrategy(object):
         tasks.assign(RankCommand(RankTargetByWilsonMethod))
         tasks.assign(RankCommand(RankTagByWilsonMethod))
         tasks.assign(RankCommand(RankModelByWilsonMethod))
-        tasks.assign(CalAspectCommand(CalTargetBasicAspectMethod))
-        tasks.assign(CalAspectCommand(CalTagBasicAspectMethod))
-        tasks.assign(CalAspectCommand(CalModelBasicAspectMethod))
+        tasks.assign(CalAspectCommand(CalTargetBasicPlusAspectMethod))
+        tasks.assign(CalAspectCommand(CalTagBasicPlusAspectMethod))
+        tasks.assign(CalAspectCommand(CalModelBasicPlusAspectMethod))
         # 100的问题 服务-包装
         tasks.assign(RateCommand(RatingTargetIndependentMethod))
         tasks.assign(RateCommand(RatingTagIndependentMethod))

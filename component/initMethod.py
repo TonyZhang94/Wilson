@@ -34,6 +34,13 @@ class InitFilesMethod(InitMethod):
             raise e
 
         try:
+            os.makedirs(FileBase.showPath.format(pcid=pcid, cid=cid))
+        except FileExistsError:
+            pass
+        except Exception as e:
+            raise e
+
+        try:
             os.makedirs(FileBase.resultPath.format(pcid=pcid, cid=cid))
         except FileExistsError:
             pass
