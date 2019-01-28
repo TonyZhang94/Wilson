@@ -412,6 +412,9 @@ class RatingModelIndependentMethod(RateMethod):
 class RatingTagByTargetMethod(RateMethod):
     """Rate Tag By Target Rating"""
     def __init__(self):
+        self.threshold_share = 0.6
+        self.threshold_base = 5
+
         pcid, cid = Entrance().params
         self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "TAG_{name}.jpg"
 
@@ -422,13 +425,13 @@ class RatingTagByTargetMethod(RateMethod):
         self.show_func(df)
         dump(df, "info")
 
-    @staticmethod
-    def rate_func(df):
+    def rate_func(self, df):
         target_min = min(min(df["target_score"].values), 0)
         total = 0
         add = {k: 0 for k in Parameters.tagList}
         cnt = {k: 0 for k in Parameters.tagList}
-        threshold = len([x for x in df["model_target_ratings"].values if x > 0]) * 0.6
+        threshold = max(len([x for x in df["model_target_ratings"].values if x > 0]) *
+                        self.threshold_share, self.threshold_base)
         for k, v in df.iterrows():
             if 0 != v["model_target_ratings"]:
                 if cnt[v["tag"]] >= threshold:
@@ -495,6 +498,126 @@ class RatingModelByTagMethod(RateMethod):
             if 0 != v["model_tag_ratings"]:
                 total = total + v["tag_score"] - tag_min
                 score += (v["tag_score"] - tag_min) * v["model_tag_ratings"]
+        if total != 0:
+            df["model_ratings"] = max(round(score / total, 2), 0)
+        else:
+            df["model_ratings"] = total
+        return df
+
+    def show_func(self, df):
+        if not Mode.showFlag:
+            return
+
+        x = df["model_ratings"].values
+        over_len = len([t for t in x if not 0 <= t <= 100])
+        if over_len > 0:
+            print("over len", over_len)
+            print([t for t in x if not 0 <= t <= 100])
+            x = [min(max(t, 0), 100) for t in x]
+        msg = "size {} max {} min {} avg {}". \
+            format(len(x), round(max(x), 2), round(min(x), 2),
+                   round(sum(x) / len(x), 2))
+        _x, _y = list(), list()
+        for i in range(0, 100):
+            cnt = len([t for t in x if i <= t < i + 1])
+            if cnt != 0:
+                _x.append(i)
+                _y.append(cnt)
+        self.show(x=_x, y=_y, title="tag", name=msg, sub_path="model")
+
+
+class RatingTagByTargetByWilsonMethod(RateMethod):
+    """Rate Tag By Target Rating And Target Aspect Wilson"""
+
+    def __init__(self):
+        self.threshold_share = 0.8
+        self.threshold_base = 5
+        self.info = None
+
+        pcid, cid = Entrance().params
+        self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "TAG_{name}.jpg"
+
+    def rate(self):
+        df = load("info")
+        self.info = load_pkl("targetBasicAspectInfo")
+        df = df.sort_values(["model_target_ratings"], ascending=False)
+        df = df.groupby(["brand", "model", "tag"]).apply(self.rate_func)
+        self.show_func(df)
+        dump(df, "info")
+
+    def rate_func(self, df):
+        total = 0
+        add = {k: 0 for k in Parameters.tagList}
+        cnt = {k: 0 for k in Parameters.tagList}
+        threshold = max(len([x for x in df["model_target_ratings"].values if x > 0]) *
+                        self.threshold_share, self.threshold_base)
+        for k, v in df.iterrows():
+            if 0 != v["model_target_ratings"]:
+                if cnt[v["tag"]] >= threshold:
+                    continue
+                total = total + self.info["%s-%s" % (v["tag"], v["target"])]["wilson"]
+                add[v["tag"]] += self.info["%s-%s" % (v["tag"], v["target"])]["wilson"] * v["model_target_ratings"]
+                cnt[v["tag"]] += 1
+        for tag in Parameters.tagList:
+            pos = df["tag"] == tag
+            if total != 0 and add[tag] / total > 100:
+                print(df)
+                print(tag, total, add[tag], cnt[tag])
+            if 0 != total:
+                df.loc[pos, "model_tag_ratings"] = max(round(add[tag] / total, 2), 0)
+            else:
+                df.loc[pos, "model_tag_ratings"] = total
+
+        return df
+
+    def show_func(self, df):
+        if not Mode.showFlag:
+            return
+
+        temp = df.drop_duplicates(["brand", "model", "tag"])
+        for tag in Parameters.tagList:
+            x = temp[temp["tag"] == tag]["model_tag_ratings"].values
+            over_len = len([t for t in x if not 0 <= t <= 100])
+            if over_len > 0:
+                print("over len", over_len)
+                print([t for t in x if not 0 <= t <= 100])
+                x = [min(max(t, 0), 100) for t in x]
+            msg = "tag {} size {} max {} min {} avg {}". \
+                format(tag, len(x), round(max(x), 2), round(min(x), 2),
+                       round(sum(x) / len(x), 2))
+            _x, _y = list(), list()
+            for i in range(0, 100):
+                cnt = len([t for t in x if i <= t < i + 1])
+                if cnt != 0:
+                    _x.append(i)
+                    _y.append(cnt)
+            self.show(x=_x, y=_y, title="tag", name=msg, sub_path="tag")
+
+
+class RatingModelByTagByWilsonMethod(RateMethod):
+    """Rate Model By Tag Rating And Tag Aspect Wilson"""
+    def __init__(self):
+        self.info = None
+
+        pcid, cid = Entrance().params
+        self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "MODEL_{name}.jpg"
+
+    def rate(self):
+        origin = load("info")
+        self.info = load_pkl("tagBasicAspectInfo")
+        df = origin.drop_duplicates(["brand", "model", "tag"])
+        df = df.sort_values(["model_tag_ratings"], ascending=False)
+        df = df.groupby(["brand", "model"]).apply(self.rate_func)
+        df = df.drop_duplicates(["brand", "model"])[["brand", "model", "model_ratings"]]
+        self.show_func(df)
+        dump(pd.merge(origin, df, "left", on=["brand", "model"]), "info")
+
+    def rate_func(self, df):
+        total, score = 0, 0
+        for k, v in df.iterrows():
+            if 0 != v["model_tag_ratings"]:
+                total += self.info[v["tag"]]["wilson"]
+                score += self.info[v["tag"]]["wilson"] * v["model_tag_ratings"]
         if total != 0:
             df["model_ratings"] = max(round(score / total, 2), 0)
         else:

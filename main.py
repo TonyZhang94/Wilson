@@ -5,8 +5,8 @@ from Wilson.strategy.noRelationStrategy import NoRelationStrategy
 from Wilson.strategy.noRelationWithWilsonAspectStrategy import NoRelationWithWilsonAspectStrategy
 from Wilson.strategy.relationStrategy import RelationStrategy
 from Wilson.strategy.relationWithWilsonAspectStrategy import RelationWithWilsonAspectStrategy
-# from Wilson.strategy.relationByWilsonStrategy import RelationByWilsonStrategy
-# from Wilson.strategy.relationByWilsonWithWilsonAspectStrategy import RelationByWilsonWithWilsonAspectStrategy
+from Wilson.strategy.relationByWilsonStrategy import RelationByWilsonStrategy
+from Wilson.strategy.relationByWilsonWithWilsonAspectStrategy import RelationByWilsonWithWilsonAspectStrategy
 
 
 class Manager(object):
@@ -24,14 +24,14 @@ class Manager(object):
         4. RelationWithWilsonAspectStrategy() 缺点：计算总分方式有些简单
 
         其次：
-        6. RelationByWilsonWithWilsonAspectStrategy() 理想状态下是最好的，但是还有待评定也没有写
+        6. RelationByWilsonWithWilsonAspectStrategy() 理想状态下是最好的，还没怎么测
         """
         # strategy = NoRelationStrategy()
         # strategy = NoRelationWithWilsonAspectStrategy()
         # strategy = RelationStrategy()
-        strategy = RelationWithWilsonAspectStrategy()
+        # strategy = RelationWithWilsonAspectStrategy()
         # strategy = RelationByWilsonStrategy()
-        # strategy = RelationByWilsonWithWilsonAspectStrategy()
+        strategy = RelationByWilsonWithWilsonAspectStrategy()
         strategy().execute()
 
 
