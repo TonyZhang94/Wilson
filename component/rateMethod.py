@@ -404,3 +404,115 @@ class RatingModelIndependentMethod(RateMethod):
             format(diff, round(max(x), 2), round(min(x), 2),
                    round(sum(x) / len(x), 2), self.sigma, self.info["score_sum"])
         return df, x, msg
+
+
+class RatingTagByTargetMethod(RateMethod):
+    """Rate Tag By Target Rating"""
+    def rate(self):
+        df = load("info")
+        df = df.groupby(["brand", "model", "tag"]).apply(self.rate_func)
+        self.show_func(df)
+        # dump(df, "info")
+
+    @staticmethod
+    def rate_func(df):
+        target_min = min(min(df["target_min"].values), 0)
+        total = 0
+        add = {k: 0 for k in Parameters.tagList}
+        cnt = {k: 0 for k in Parameters.tagList}
+        threshold = len([x for x in df["model_target_ratings"].values if x > 0]) * 0.6
+        for k, v in df.iterrows():
+            if 0 != v["model_target_ratings"]:
+                if cnt[v["tag"]] >= threshold:
+                    continue
+                total = total + v["target_score"] - target_min
+                # total = total + v["target_score"]
+                add[v["tag"]] += (v["target_score"] - target_min) * v["model_target_ratings"]
+                # add[v["tag"]] += (v["target_score"]) * v["model_target_ratings"]
+                cnt[v["tag"]] += 1
+        for tag in Parameters.tagList:
+            pos = df["tag"] == tag
+            # total = total + threshold - cnt[tag]
+            if total != 0 and add[tag] / total > 100:
+                print(df)
+                print(tag, total, add[tag], target_min, cnt[tag])
+            if 0 != total:
+                df.loc[pos, "model_tag_ratings"] = max(round(add[tag] / total, 2), 0)
+            else:
+                df.loc[pos, "model_tag_ratings"] = total
+
+        return df
+
+    def show_func(self, df):
+        if not Mode.showFlag:
+            return
+
+        temp = df.drop_duplicates(["brand", "model", "tag"])
+        for tag in Parameters.tagList:
+            x = temp[temp["tag"] == tag]["model_tag_ratings"].values
+
+            over_len = len([t for t in x if not 0 <= t <= 100])
+            if over_len > 0:
+                print("over len", over_len)
+                print([t for t in x if not 0 <= t <= 100])
+                x = [min(max(t, 0), 100) for t in x]
+            msg = "size {} max {} min {} avg {}". \
+                format(len(x), round(max(x), 2), round(min(x), 2),
+                       round(sum(x) / len(x), 2))
+            _x, _y = list(), list()
+            for i in range(0, 100):
+                cnt = len([t for t in x if i <= t < i + 1])
+                if cnt != 0:
+                    _x.append(i)
+                    _y.append(cnt)
+            self.show(x=_x, y=_y, title="tag", name=msg, sub_path="tag")
+
+
+class RatingModelByTagMethod(RateMethod):
+    """Rate Model By Tag Rating"""
+    def rate(self):
+        origin = load("info")
+        df = origin.drop_duplicates("brand", "model", "tag")
+        df = df.groupby(["brand", "model"]).apply(self.rate_func)
+        df = df.drop_duplicates(["brand", "model"])
+        self.show_func(df)
+        dump(pd.merge(origin, df, "left", on=["brand", "model"]), "info")
+
+    @staticmethod
+    def rate_func(df):
+        tag_min = min(min(df["tag_min"].values), 0)
+        total, score = 0, 0
+        for k, v in df.iterrows():
+            if 0 != v["model_tag_ratings"]:
+                total = total + v["tag_score"] - tag_min
+                # total = total + v["tag_score"]
+                score += (v["tag_score"] - tag_min) * v["model_tag_ratings"]
+                # score += (v["tag_score"]) * v["model_tag_ratings"]
+        if total != 0:
+            df["model_ratings"] = max(round(score / total, 2), 0)
+            # df["model_ratings"] = max(round(score / 4, 2), 0)
+        else:
+            df["model_ratings"] = total
+        return df
+
+    def show_func(self, df):
+        if not Mode.showFlag:
+            return
+
+        x = df["model_ratings"].values
+
+        over_len = len([t for t in x if not 0 <= t <= 100])
+        if over_len > 0:
+            print("over len", over_len)
+            print([t for t in x if not 0 <= t <= 100])
+            x = [min(max(t, 0), 100) for t in x]
+        msg = "size {} max {} min {} avg {}". \
+            format(len(x), round(max(x), 2), round(min(x), 2),
+                   round(sum(x) / len(x), 2))
+        _x, _y = list(), list()
+        for i in range(0, 100):
+            cnt = len([t for t in x if i <= t < i + 1])
+            if cnt != 0:
+                _x.append(i)
+                _y.append(cnt)
+        self.show(x=_x, y=_y, title="tag", name=msg, sub_path="model")

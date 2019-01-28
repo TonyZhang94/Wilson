@@ -3,6 +3,10 @@
 from Wilson.tools.public import Entrance
 from Wilson.strategy.noRelationStrategy import NoRelationStrategy
 from Wilson.strategy.noRelationWithWilsonAspectStrategy import NoRelationWithWilsonAspectStrategy
+from Wilson.strategy.relationStrategy import RelationStrategy
+from Wilson.strategy.relationWithWilsonAspectStrategy import RelationWithWilsonAspectStrategy
+# from Wilson.strategy.relationByWilsonStrategy import RelationByWilsonStrategy
+# from Wilson.strategy.relationByWilsonWithWilsonAspectStrategy import RelationByWilsonWithWilsonAspectStrategy
 
 
 class Manager(object):
@@ -10,8 +14,25 @@ class Manager(object):
         Entrance(pcid=pcid, cid=cid)
 
     def run(self):
+        """
+        WithWilson 区别在于basic和basicPlus（serial的区别）
+        Relation 的区别在于Tag和Model打分是否独立（以及Tag和Model排序和打分的先后关系）
+        RelationByWilson 的区别在于 Target和Tag，Tag和Model的关系
+
+        推荐
+        2. NoRelationWithWilsonAspectStrategy() 缺点：总分数可能超过部件分数区间
+        4. RelationWithWilsonAspectStrategy() 缺点：计算总分方式有些简单
+
+        性能待评定，6或许会比4好
+        5. RelationByWilsonStrategy()
+        6. RelationByWilsonWithWilsonAspectStrategy()
+        """
         strategy = NoRelationStrategy()
         # strategy = NoRelationWithWilsonAspectStrategy()
+        # strategy = RelationStrategy()
+        # strategy = RelationWithWilsonAspectStrategy()
+        # strategy = RelationByWilsonStrategy()
+        # strategy = RelationByWilsonWithWilsonAspectStrategy()
         strategy().execute()
 
 

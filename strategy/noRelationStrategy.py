@@ -27,7 +27,6 @@ class NoRelationStrategy(object):
         tasks.assign(CalAspectCommand(CalTargetBasicAspectMethod))
         tasks.assign(CalAspectCommand(CalTagBasicAspectMethod))
         tasks.assign(CalAspectCommand(CalModelBasicAspectMethod))
-        # 100的问题 服务-包装
         tasks.assign(RateCommand(RatingTargetIndependentMethod))
         tasks.assign(RateCommand(RatingTagIndependentMethod))
         tasks.assign(RateCommand(RatingModelIndependentMethod))

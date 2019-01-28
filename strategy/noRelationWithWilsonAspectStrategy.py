@@ -27,7 +27,6 @@ class NoRelationWithWilsonAspectStrategy(object):
         tasks.assign(CalAspectCommand(CalTargetBasicPlusAspectMethod))
         tasks.assign(CalAspectCommand(CalTagBasicPlusAspectMethod))
         tasks.assign(CalAspectCommand(CalModelBasicPlusAspectMethod))
-        # 100的问题 服务-包装
         tasks.assign(RateCommand(RatingTargetIndependentMethod))
         tasks.assign(RateCommand(RatingTagIndependentMethod))
         tasks.assign(RateCommand(RatingModelIndependentMethod))
