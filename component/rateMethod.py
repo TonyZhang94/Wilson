@@ -62,6 +62,7 @@ class RatingTargetIndependentMethod(RateMethod):
         self.info = load_pkl("targetBasicAspectInfo")
         self.serial = load_pkl("targetNumInfo")
         self.tag_serial = load_pkl("tagBasicAspectInfo")
+        df = df.sort_values(["target_wilson"], ascending=False)
         df = df.groupby(["tag", "target"]).apply(self.rate_func)
         dump(df, "info")
 
@@ -69,10 +70,10 @@ class RatingTargetIndependentMethod(RateMethod):
         df, x, msg = self.rate_func_process(df)
         if Mode.showFlag:
             _x, _y = list(), list()
-            ss = len([t for t in x if t == 100])
-            if ss:
-                print(df["tag"].values[0], df["target"].values[0])
-                print("100 num", ss)
+            # ss = len([t for t in x if t == 100])
+            # if ss:
+            #     print(df["tag"].values[0], df["target"].values[0])
+            #     print("100 num", ss)
             for i in range(0, 101):
                 cnt = len([t for t in x if i <= t < i + 1])
                 if cnt != 0:
@@ -213,6 +214,7 @@ class RatingTagIndependentMethod(RateMethod):
         self.info = load_pkl("tagBasicAspectInfo")
         self.serial = load_pkl("tagNumInfo")
         df = origin[["brand", "model", "tag", "tag_score"]].drop_duplicates(["brand", "model", "tag"])
+        df = df.sort_values(["tag_wilson"], ascending=False)
         df = df.groupby(["tag"]).apply(self.rate_func)
         del df["tag_score"]
         dump(pd.merge(origin, df, "left", on=["brand", "model", "tag"]), "info")
@@ -341,6 +343,7 @@ class RatingModelIndependentMethod(RateMethod):
         origin = load("info")
         self.info = load_pkl("modelBasicAspectInfo")
         df = origin[["brand", "model", "model_score"]].drop_duplicates(["brand", "model"])
+        df = df.sort_values(["model_wilson"], ascending=False)
         df = self.rate_func(df)
         del df["model_score"]
         dump(pd.merge(origin, df, "left", on=["brand", "model"]), "info")
@@ -408,15 +411,20 @@ class RatingModelIndependentMethod(RateMethod):
 
 class RatingTagByTargetMethod(RateMethod):
     """Rate Tag By Target Rating"""
+    def __init__(self):
+        pcid, cid = Entrance().params
+        self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "TAG_{name}.jpg"
+
     def rate(self):
         df = load("info")
+        df = df.sort_values(["model_target_ratings"], ascending=False)
         df = df.groupby(["brand", "model", "tag"]).apply(self.rate_func)
         self.show_func(df)
-        # dump(df, "info")
+        dump(df, "info")
 
     @staticmethod
     def rate_func(df):
-        target_min = min(min(df["target_min"].values), 0)
+        target_min = min(min(df["target_score"].values), 0)
         total = 0
         add = {k: 0 for k in Parameters.tagList}
         cnt = {k: 0 for k in Parameters.tagList}
@@ -426,13 +434,10 @@ class RatingTagByTargetMethod(RateMethod):
                 if cnt[v["tag"]] >= threshold:
                     continue
                 total = total + v["target_score"] - target_min
-                # total = total + v["target_score"]
                 add[v["tag"]] += (v["target_score"] - target_min) * v["model_target_ratings"]
-                # add[v["tag"]] += (v["target_score"]) * v["model_target_ratings"]
                 cnt[v["tag"]] += 1
         for tag in Parameters.tagList:
             pos = df["tag"] == tag
-            # total = total + threshold - cnt[tag]
             if total != 0 and add[tag] / total > 100:
                 print(df)
                 print(tag, total, add[tag], target_min, cnt[tag])
@@ -450,14 +455,13 @@ class RatingTagByTargetMethod(RateMethod):
         temp = df.drop_duplicates(["brand", "model", "tag"])
         for tag in Parameters.tagList:
             x = temp[temp["tag"] == tag]["model_tag_ratings"].values
-
             over_len = len([t for t in x if not 0 <= t <= 100])
             if over_len > 0:
                 print("over len", over_len)
                 print([t for t in x if not 0 <= t <= 100])
                 x = [min(max(t, 0), 100) for t in x]
-            msg = "size {} max {} min {} avg {}". \
-                format(len(x), round(max(x), 2), round(min(x), 2),
+            msg = "tag {} size {} max {} min {} avg {}". \
+                format(tag, len(x), round(max(x), 2), round(min(x), 2),
                        round(sum(x) / len(x), 2))
             _x, _y = list(), list()
             for i in range(0, 100):
@@ -470,27 +474,29 @@ class RatingTagByTargetMethod(RateMethod):
 
 class RatingModelByTagMethod(RateMethod):
     """Rate Model By Tag Rating"""
+    def __init__(self):
+        pcid, cid = Entrance().params
+        self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "MODEL_{name}.jpg"
+
     def rate(self):
         origin = load("info")
-        df = origin.drop_duplicates("brand", "model", "tag")
+        df = origin.drop_duplicates(["brand", "model", "tag"])
+        df = df.sort_values(["model_tag_ratings"], ascending=False)
         df = df.groupby(["brand", "model"]).apply(self.rate_func)
-        df = df.drop_duplicates(["brand", "model"])
+        df = df.drop_duplicates(["brand", "model"])[["brand", "model", "model_ratings"]]
         self.show_func(df)
         dump(pd.merge(origin, df, "left", on=["brand", "model"]), "info")
 
     @staticmethod
     def rate_func(df):
-        tag_min = min(min(df["tag_min"].values), 0)
+        tag_min = min(min(df["tag_score"].values), 0)
         total, score = 0, 0
         for k, v in df.iterrows():
             if 0 != v["model_tag_ratings"]:
                 total = total + v["tag_score"] - tag_min
-                # total = total + v["tag_score"]
                 score += (v["tag_score"] - tag_min) * v["model_tag_ratings"]
-                # score += (v["tag_score"]) * v["model_tag_ratings"]
         if total != 0:
             df["model_ratings"] = max(round(score / total, 2), 0)
-            # df["model_ratings"] = max(round(score / 4, 2), 0)
         else:
             df["model_ratings"] = total
         return df
@@ -500,7 +506,6 @@ class RatingModelByTagMethod(RateMethod):
             return
 
         x = df["model_ratings"].values
-
         over_len = len([t for t in x if not 0 <= t <= 100])
         if over_len > 0:
             print("over len", over_len)

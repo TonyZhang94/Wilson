@@ -57,7 +57,10 @@ class AdjustWeightCommand(TasksObj):
     obj = Descriptor(AdjustWeightMethod)
 
     def __init__(self, method):
-        self.obj = method()
+        if not Mode.useDate:
+            self.obj = NotAdjustWeightMethod()
+        else:
+            self.obj = method()
 
     @logging
     def execute(self):

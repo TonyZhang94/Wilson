@@ -14,7 +14,7 @@ class NoRelationStrategy(object):
         tasks.assign(InitCommand(InitFilesMethod))
         tasks.assign(GetDataCommand(GetSpecialTagReviewsMethod))
         # tasks.assign(GetDataCommand(GetReviewsMethod))
-        tasks.assign(AdjustWeightCommand(NotAdjustWeightMethod))
+        tasks.assign(AdjustWeightCommand(AdjustWeightByFussySetMethod))
         tasks.assign(CalBaseLineCommand(CalTargetBaseLineMethod))
         tasks.assign(CalBaseLineCommand(CalTagBaseLineMethod))
         tasks.assign(CalBaseLineCommand(CalModelBaseLineMethod))

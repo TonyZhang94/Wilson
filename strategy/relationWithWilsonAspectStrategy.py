@@ -11,24 +11,22 @@ class RelationWithWilsonAspectStrategy(object):
     @staticmethod
     def assign_tasks():
         tasks = Tasks()
-        tasks = Tasks()
         tasks.assign(InitCommand(InitFilesMethod))
         tasks.assign(GetDataCommand(GetSpecialTagReviewsMethod))
         # tasks.assign(GetDataCommand(GetReviewsMethod))
-        tasks.assign(AdjustWeightCommand(NotAdjustWeightMethod))
+        tasks.assign(AdjustWeightCommand(AdjustWeightByFussySetMethod))
         tasks.assign(CalBaseLineCommand(CalTargetBaseLineMethod))
         tasks.assign(CalBaseLineCommand(CalTagBaseLineMethod))
         tasks.assign(CalBaseLineCommand(CalModelBaseLineMethod))
         tasks.assign(EvaluateCommand(EvaluateTargetByWilsonMethod))
         tasks.assign(RankCommand(RankTargetByWilsonMethod))
         tasks.assign(CalAspectCommand(CalTargetBasicPlusAspectMethod))
-        # tasks.assign(CalAspectCommand(CalTagBasicAspectMethod))
-        # tasks.assign(CalAspectCommand(CalModelBasicAspectMethod))
+        tasks.assign(CalAspectCommand(CalTagBasicPlusAspectMethod))
         tasks.assign(RateCommand(RatingTargetIndependentMethod))
-        tasks.assign(RateCommand(RatingTagByTargetMethod))  #
-        tasks.assign(RateCommand(RatingModelByTagMethod))  #
-        tasks.assign(RankCommand(RankTagByRatingMethod))  #
-        tasks.assign(RankCommand(RankModelByRatingMethod))  #
+        tasks.assign(RateCommand(RatingTagByTargetMethod))
+        tasks.assign(RateCommand(RatingModelByTagMethod))
+        tasks.assign(RankCommand(RankTagByRatingMethod))
+        tasks.assign(RankCommand(RankModelByRatingMethod))
         tasks.assign(CalAverAndTopCommand(CalTargetAverAndTopMethod))
         tasks.assign(CalAverAndTopCommand(CalTagAverAndTopMethod))
         tasks.assign(CalAverAndTopCommand(CalModelAverAndTopMethod))

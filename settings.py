@@ -25,11 +25,13 @@ DBDefault = DB99
 class Mode(object):
     """For Test"""
     srcLOCAL = True
+    useDate = False
     showFlag = True
     clearLOCAL = False
 
     """For Use"""
     # srcLOCAL = True
+    # useDate = True
     # showFlag = False
     # clearLOCAL = True
 

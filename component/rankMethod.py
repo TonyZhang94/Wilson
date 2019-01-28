@@ -57,7 +57,7 @@ class RankModelByScoreMethod(RankMethod):
 
 
 class RankTargetByWilsonMethod(RankMethod):
-    """Rank Models By Wilson Confidence Interval"""
+    """Rank Targets By Wilson Confidence Interval"""
     def rank(self):
         origin = load("info")
         df = origin[["brand", "model", "tag", "target", "target_wilson"]]
@@ -67,7 +67,7 @@ class RankTargetByWilsonMethod(RankMethod):
 
 
 class RankTagByWilsonMethod(RankMethod):
-    """Rank Models By Wilson Confidence Interval"""
+    """Rank Tags By Wilson Confidence Interval"""
     def rank(self):
         origin = load("info")
         df = origin[["brand", "model", "tag", "tag_wilson"]].drop_duplicates(["brand", "model", "tag"])
@@ -90,15 +90,27 @@ class RankTargetByRatingMethod(RankMethod):
     """Rank Targets By Rating"""
     def rank(self):
         origin = load("info")
+        df = origin[["brand", "model", "tag", "target", "model_target_ratings"]]
+        df = df.groupby(["target"]).apply(self.rank_func, "model_target_ratings", "model_target_rank")
+        del df["model_target_ratings"]
+        dump(pd.merge(origin, df, "left", on=["brand", "model", "tag", "target"]), "info")
 
 
 class RankTagByRatingMethod(RankMethod):
     """Rank Tags By Rating"""
     def rank(self):
         origin = load("info")
+        df = origin[["brand", "model", "tag", "model_tag_ratings"]].drop_duplicates(["brand", "model", "tag"])
+        df = df.groupby(["tag"]).apply(self.rank_func, "model_tag_ratings", "model_tag_rank")
+        del df["model_tag_ratings"]
+        dump(pd.merge(origin, df, "left", on=["brand", "model", "tag"]), "info")
 
 
 class RankModelByRatingMethod(RankMethod):
     """Rank Models By Rating"""
     def rank(self):
         origin = load("info")
+        df = origin[["brand", "model", "model_ratings"]].drop_duplicates(["brand", "model"])
+        df = self.rank_func(df, "model_ratings", "model_rank")
+        del df["model_ratings"]
+        dump(pd.merge(origin, df, "left", on=["brand", "model"]), "info")
