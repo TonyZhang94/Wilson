@@ -22,9 +22,7 @@ class Manager(object):
         推荐：
         2. NoRelationWithWilsonAspectStrategy() 缺点：总分数可能超过部件分数区间
         4. RelationWithWilsonAspectStrategy() 缺点：计算总分方式有些简单
-
-        其次：
-        6. RelationByWilsonWithWilsonAspectStrategy() 理想状态下是最好的，还没怎么测
+        6. RelationByWilsonWithWilsonAspectStrategy() 理想状态下是最好的
         """
         # strategy = NoRelationStrategy()
         # strategy = NoRelationWithWilsonAspectStrategy()

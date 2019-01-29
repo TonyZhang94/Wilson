@@ -9,8 +9,11 @@ if __name__ == '__main__':
 
     Entrance(pcid=pcid, cid=cid)
 
-    x = load_pkl("modelBasicAspectInfo")
-    print(x)
+    try:
+        x = load_pkl("modelBasicAspectInfo")
+        print(x)
+    except Exception:
+        pass
 
     for k, x in load_pkl("tagBasicAspectInfo").items():
         print(k, x)

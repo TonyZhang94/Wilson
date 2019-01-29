@@ -48,9 +48,9 @@ class Parameters(object):
     zModel = 10
 
     """可调"""
-    zTargetAspect = 10
-    zTagAspect = 10
-    zModelAspect = 10
+    zTargetAspect = 1.96
+    zTagAspect = 1.96
+    zModelAspect = 1.96
 
     def __new__(cls, *args, **kwargs):
         raise InstantiationError

@@ -530,9 +530,14 @@ class RatingTagByTargetByWilsonMethod(RateMethod):
     """Rate Tag By Target Rating And Target Aspect Wilson"""
 
     def __init__(self):
-        self.threshold_share = 0.8
-        self.threshold_base = 5
+        self.threshold_share = 1
+        self.threshold_base = 0
+
+        # 可调，tag缺失某个target的情况加惩罚
+        self.co = 0.02
+
         self.info = None
+        self.info_num = None
 
         pcid, cid = Entrance().params
         self.path = FileBase.showPath.format(pcid=pcid, cid=cid) + "TAG_{name}.jpg"
@@ -540,13 +545,14 @@ class RatingTagByTargetByWilsonMethod(RateMethod):
     def rate(self):
         df = load("info")
         self.info = load_pkl("targetBasicAspectInfo")
+        self.info_num = load_pkl("targetNumInfo")
         df = df.sort_values(["model_target_ratings"], ascending=False)
         df = df.groupby(["brand", "model", "tag"]).apply(self.rate_func)
         self.show_func(df)
         dump(df, "info")
 
     def rate_func(self, df):
-        total = 0
+        total, tag = 0, df["tag"].values[0]
         add = {k: 0 for k in Parameters.tagList}
         cnt = {k: 0 for k in Parameters.tagList}
         threshold = max(len([x for x in df["model_target_ratings"].values if x > 0]) *
@@ -558,6 +564,7 @@ class RatingTagByTargetByWilsonMethod(RateMethod):
                 total = total + self.info["%s-%s" % (v["tag"], v["target"])]["wilson"]
                 add[v["tag"]] += self.info["%s-%s" % (v["tag"], v["target"])]["wilson"] * v["model_target_ratings"]
                 cnt[v["tag"]] += 1
+        total += self.co * (self.info_num[tag]+1 - cnt[tag])
         for tag in Parameters.tagList:
             pos = df["tag"] == tag
             if total != 0 and add[tag] / total > 100:
@@ -597,6 +604,9 @@ class RatingTagByTargetByWilsonMethod(RateMethod):
 class RatingModelByTagByWilsonMethod(RateMethod):
     """Rate Model By Tag Rating And Tag Aspect Wilson"""
     def __init__(self):
+        # 可调，model缺失某个tag的情况加惩罚
+        self.co = 1.2
+
         self.info = None
 
         pcid, cid = Entrance().params
@@ -614,10 +624,17 @@ class RatingModelByTagByWilsonMethod(RateMethod):
 
     def rate_func(self, df):
         total, score = 0, 0
+        tags = set(Parameters.tagList)
         for k, v in df.iterrows():
             if 0 != v["model_tag_ratings"]:
                 total += self.info[v["tag"]]["wilson"]
+                try:
+                    tags.remove(v["tag"])
+                except KeyError:
+                    pass
                 score += self.info[v["tag"]]["wilson"] * v["model_tag_ratings"]
+        for tag in tags:
+            total += self.info[tag]["wilson"] * self.co
         if total != 0:
             df["model_ratings"] = max(round(score / total, 2), 0)
         else:

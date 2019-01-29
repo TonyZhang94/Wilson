@@ -50,4 +50,5 @@ class AdjustWeightByFussySetMethod(AdjustWeightMethod):
                     (self.record[v["datamonth"]] - self.publish) / (self.current - self.publish))
             # df.at[k, "frequency"] = v["frequency"] * (
             #         (self.record[v["datamonth"]] - self.publish) / (self.current - self.publish))
+        del df["datamonth"]
         dump(df, "info")
