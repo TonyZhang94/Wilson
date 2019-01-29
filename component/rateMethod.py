@@ -412,6 +412,7 @@ class RatingModelIndependentMethod(RateMethod):
 class RatingTagByTargetMethod(RateMethod):
     """Rate Tag By Target Rating"""
     def __init__(self):
+        # 可调 提高/降低综合的分数
         self.threshold_share = 0.6
         self.threshold_base = 5
 
